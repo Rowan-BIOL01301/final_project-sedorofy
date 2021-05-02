@@ -1,7 +1,7 @@
 ---
 title: "Final Project"
 subtitle: "Data Science for Biologists, Spring 2021"
-author: "Your name goes here"
+author: "Sam Dorofy"
 output: html_document
 editor_options: 
   chunk_output_type: console
@@ -12,6 +12,10 @@ editor_options:
 knitr::opts_chunk$set(warning=FALSE, message=FALSE, echo = TRUE, include = TRUE)
 
 # Load all libraries you use HERE:
+library(tidyverse)
+library(dplyr)
+library(modelr)
+library(pROC)
 ```
 
 <br><br>
@@ -19,52 +23,98 @@ knitr::opts_chunk$set(warning=FALSE, message=FALSE, echo = TRUE, include = TRUE)
 ## Introduction
 
 ```{r read-examine-data}
-
+brain_tumors <- read_csv("dorofy_braintumor.csv")
+glimpse(brain_tumors)
+view(brain_tumors)
 ```
 
 <br><br>
 
 ## Question 1
 
-#### REPLACE TEXT WITH YOUR QUESTION. Your question should literally be a level-4 header.
+####Entropy in MRI scans is used to determine the size and location a possible brain tumor while Homogeneity refers to the balance of the magnetic field with or without a patient present.  What is the relationship between the Entropy and Homogeneity in the brain tumor MRI scans?
 
 ### Methods
+```{examine mri data}
+### Methods 
+brain_tumors_nona <- brain_tumors %>% drop_na()
+
+brain_tumors %>%
+  ggplot(aes(x = Homogeneity, y = Entropy, fill = Target)) +
+  geom_point() +
+  scale_fill_gradient()) +
+  labs(x = "Homogeneity",
+       y = "Entropy",
+       title = "Homogeneity and Entropy Values in the Presence of both Brain Tumors and no Brain Tumors")
+
 
 ### Answer
 
 Replace this text with your answer to your question.
 
-
+```
 <br><br>
 
 ## Question 2
 
-#### REPLACE TEXT WITH YOUR QUESTION. Your question should literally be a level-4 header.
+#### Of all of the patients in the study, how many have a brain tumor or no tumor?  Determine the number of each and exhibit these findings visually.  
+
+```{Count of Tumor Presence}
 
 ### Methods
+brain_tumors$Target<-ifelse(brain_tumors$Target==0, "yes","no") 
+#'0' is no tumor and '1' is a tumor
+brain_tumors %>%
+  ggplot(aes(x = Target, fill = Target)) +
+  geom_bar(color = "black") +
+  scale_fill_manual(values = c("darkmagenta","pink")) +
+  labs(x = "Presence of Brain Tumor",
+       y = "Number of Patients",
+       title = "How Many Patients Have a Brain Tumors Present?") 
+
 
 ### Answer
 
-Replace this text with your answer to your question.
-
+There are substantially more patients with a brain tumor as opposed to no brain tumor.
+```
 <br><br>
 
 ## Question 3
 
-#### REPLACE TEXT WITH YOUR QUESTION. Your question should literally be a level-4 header.
+#### How many images have a mean above 10? Do these patients have a high Entropy value?
 
 ### Methods
+```{}
+brain_tumors$Target<-ifelse(brain_tumors$Target==0, "yes","no") 
+brain_tumors %>%
+filter(Mean>=10) %>%
+count()
+brain_tumors %>%
+ ggplot(aes(x = Entropy, y = Mean, fill = Target)) +
+  geom_point() +
+  scale_fill_manual(values = c("darkmagenta","pink")) +
+  labs(x = "Entropy Value",
+       y = "Mean Above 10",
+       title = "How Many Patients Have a Brain Tumors Present?") 
+
+
+
+
+
 
 ### Answer
 
-Replace this text with your answer to your question.
+## Replace this text with your answer to your question.
 
 
+```
 <br><br>
 
 ## Question 4
 
-#### REPLACE TEXT WITH YOUR QUESTION. Your question should literally be a level-4 header.
+#### Is an increased Standard Deviation related to a high Homogeneity?
+
+```{std dev and homogeneity relationship}
 
 ### Methods
 
