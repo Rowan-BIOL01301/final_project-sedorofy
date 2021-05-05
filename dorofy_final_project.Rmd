@@ -9,16 +9,20 @@ output:
 editor_options: 
   chunk_output_type: console
 ---
+  **Dogs can't operate MRI scans... but catscan!**
+      
+  Why choose this data set?
+  
+  My current job at the American College of Radiology requires me to look at brains scans all day and I think it's truly fascinating! I thought it would be neat to merge my two worlds of school and work together for a final project.   
 
 ```{r setup, include=FALSE}
 # DON'T CHANGE THE NEXT LINE, except to add NEW options if you have any.
-knitr::opts_chunk$set(warning=FALSE, message=FALSE, echo = TRUE, include = TRUE, eval = TRUE)
+knitr::opts_chunk$set(warning=FALSE, message=FALSE, echo = TRUE, include = TRUE)
 
 # Load all libraries you use HERE:
 library(tidyverse)
 library(dplyr)
-library(modelr)
-library(pROC)
+
 ```
 
 ## Introduction
@@ -31,102 +35,111 @@ glimpse(brain_tumors)
 
 ## Question 1
 
-Entropy in MRI scans is used to determine the size and location a possible brain tumor while Homogeneity refers to the balance of the magnetic field with or without a patient present.  What is the relationship between the Entropy and Homogeneity in the brain tumor MRI scans?
+Entropy in MRI scans is used to determine the size and location of a possible brain tumor while Homogeneity refers to the balance of the magnetic field with or without a patient present.   
+     
+   **What is the relationship between the Entropy and Homogeneity values in the brain tumor MRI scans?**
 
-### Methods
-```{examine_mri_data}
-### Methods 
-brain_tumors_nona <- brain_tumors %>% drop_na()
-
-plot1 <- brain_tumors %>%
+```{r examine mri data}
+brain_tumors %>% #using the data set
 ggplot(aes(x = Homogeneity, y = Entropy)) +
-geom_point() +
-geom_smooth(method = 'lm') +
-labs(x = "Homogeneity",
-     y = "Entropy",
-     title = "Homogeneity and Entropy Values in the Presence of both Brain Tumors and no Brain Tumors") +
-  theme_bw()
-print(plot1)
-
-### Answer
+  #want Homogeneity on x axis and Entropy on y axis
+geom_point() + #plotting a scatterplot
+geom_smooth(method = 'lm') + #want a trendline
+labs(x = "Homogeneity", #title of x axis
+     y = "Entropy", #title of y axis
+     title = "Homogeneity and Entropy Values in all MRI scans") +
+  #plot title
+  theme_bw() #plot theme
 
 ```
+ 
+  **Explanation**
+  
+There is a linear relationship between Entropy and Homogeneity.  When Entropy increases, so does Homogeneity and vice versa.  This is vital to know because if these values did not relate to each other like this, this could mean the MRI calibration is off or that the scan was performed wrong.  
 
 ## Question 2
 
-Of all of the patients in the study, how many have a brain tumor or no tumor?  Determine the number of each and exhibit these findings visually.  
+  **Of all of the patients in the study, how many have a brain tumor or no tumor?**  
 
-```{Count_of_Tumor_Presence}
-#Methods
-
-tumor_presence <- ifelse(brain_tumors$Target==0, "yes","no")
+```{r tumor presence}
+tumor_presence <- ifelse(brain_tumors$Target==0, "yes","no") 
 #'0' is no tumor and '1' is a tumor
 
-plot2 <- brain_tumors %>%
-  ggplot(aes(x = tumor_presence, fill = tumor_presence)) +
-  geom_bar(aes(fill = tumor_presence)) +
-  #scale_fill_discrete(values=c("darkmagenta","pink")) +
-  labs(x = "Presence of Brain Tumor",
-       y = "Number of Patients",
+brain_tumors %>% #using the dataset
+  ggplot(aes(x = tumor_presence, #using new variable on x axis
+            #plot amount of images on y axis
+             fill = tumor_presence)) + #fill according to 'yes' and 'no'
+  geom_bar() + #want bar graph
+  scale_fill_manual(values=c("darkmagenta","pink"), "Tumor Present") +
+  #change colors of the bars according to 'yes' and 'no' tumor presence
+  labs(x = "Presence of Brain Tumor", #title of x axis
+       y = "Number of Patients", #title of y axis
        title = "How Many Patients Have a Brain Tumors Present?") +
-  theme_minimal()
-print(plot2)
-
-#Answer
-
-There are substantially more patients with no brain tumor as opposed to having a brain tumor.
+  #title of plot
+  theme_grey() #plot theme
 
 ```
+
+ **Explanation**
+ 
+There are substantially more patients with no brain tumor as opposed to having a brain tumor.  There are ~200 patients with brain tumors as opposed to ~1450 with no brain tumor.
+
 <br><br>
 
 ## Question 3
 
-Are there a lot of patient images with a mean above 10?  Does a higher mean most likely result in a high entropy?  Lastly, can you base whether a patient has a brain tumor or not going by mean and entropy results?
+  **Are there a lot of patient images with a mean above 10?  Does a higher mean most likely result in a high entropy?  Lastly, can you base whether a patient has a brain tumor or not going off of mean and entropy results?**
 
-### Methods
-```{mean_and_entropy_investigation}
-brain_tumors %>%
-  filter(Mean>=10) -> top_mean
+```{r mean and entropy investigation}
+brain_tumors %>% #using the data set
+  filter(Mean>=10) -> top_mean #only want mean values > 10
 
-plot3 <-  top_mean %>%
+top_mean %>% #using new data set
+count(Mean) #count all mean > 10
+
+top_mean %>% #using new data set filtering mean > 10
   ggplot(aes(x = Entropy, y = Mean, fill = Target)) +
-  geom_point(aes(color = Target)) +
-    geom_smooth() +
-  labs(x = "Entropy Value",
-       y = "Mean Value > 10",
+  #labeling x and y axes and filling according to brain tumor presence
+  geom_point(aes(color = Target)) + #color according to brain tumor presence
+    geom_smooth() + #want a trendline
+  labs(x = "Entropy Value", #x axis title
+       y = "Mean Value > 10", #y axis title
        title = "Relationship Between Increased Mean and Entropy Values in MRI Scans") +
-  theme_minimal()
-print(plot3)
- 
+  #plot title
+  theme_minimal() #plot theme
 
+```
+
+ **Explanation**
+ 
+No, there are not a lot of images with a mean higher than 10.  This was interesting to me in that almost the same number of patients had a brain tumor present.
 
 A high mean value (> 10) shows to also have a high entropy value.  When the mean decreases (still above 10), the entropy also decreases.  A target value of 1 (brain tumor present) seems to be more present than 0 (no brain tumor present).  It can not be ruled out whether a higher mean or entropy value suggests a brain tumor is present.
 
-```
 <br><br>
 
 ## Question 4
 
-#### Skewness and Kurtosis values in MRI scans can be useful in differentiating between benign and malignant tumors.  What is the relationship between the Skewness and Kurtosis values in this data set?
+  **Skewness and Kurtosis values in MRI scans can be useful in differentiating between benign and malignant tumors.  What is the relationship between the Skewness and Kurtosis values in this data set? **
 
-```{relationship_between_skewness_and_kurtosis}
-
-### Methods
-brain_tumorsna <- brain_tumors %>% drop_na()
+```{r skewness and kurtosis}
+brain_tumorsna <- brain_tumors %>% drop_na() 
+#need to drop n/a's otherwise graph isn't pretty 
 brain_tumorsna
 
-plot4 <- brain_tumorsna %>%
- ggplot(aes(x = Skewness,
-           y = Kurtosis)) +
-    geom_point(size = 1.75) +
-  geom_smooth(color = "mediumorchid1") +
-  labs(x = "Skewness",
-       y = "Kurtosis",
+brain_tumorsna %>% #using new data set
+ ggplot(aes(x = Skewness, #skewness on x axis
+           y = Kurtosis)) + #kurtosis on y axis
+    geom_point(size = 1.75) + #change size of points on scatterplot
+  geom_smooth(color = "mediumorchid1") + #color the trendline
+  labs(x = "Skewness", #x axis title,
+       y = "Kurtosis", #y axis title,
        title = "Relationship Between Kurtosis and Skewness Values in MRI Scans") +
-  theme_grey()
-print(plot4)
-
-### Answer
-
+  #plot title
+  theme_grey() #plot theme
 
 ```
+
+ **Explanation**
+
+The relationship between Skewness and Kurtosis looks to be somewhat exponential.  As Skewness values increase, the Kurtosis values do as well but almost 200x as much. 
